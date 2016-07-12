@@ -691,7 +691,10 @@ class AutoCommitTask(object):
         if not self._enabled:
             return
 
-        if self._coordinator.coordinator_unknown():
+        # Kafka-backed offset storage requires a coordinator
+        if (self._coordinator.config['api_version'] >= (0, 8, 2) and
+            self._coordinator.coordinator_unknown()):
+
             log.debug("Cannot auto-commit offsets for group %s because the"
                       " coordinator is unknown", self._coordinator.group_id)
             backoff = self._coordinator.config['retry_backoff_ms'] / 1000.0
